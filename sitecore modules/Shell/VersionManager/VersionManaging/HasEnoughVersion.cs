@@ -51,7 +51,8 @@ namespace Sitecore.VersionManager.Pipelines.GetContentEditorWarnings
                 Item item = args.Item;
                 if (item != null)
                 {
-                    if (configVersionTemplates.Contains(item.TemplateID.ToString()) && Settings.GetBoolSetting("VersionManager.ShowContentEditorWarnings", true) && VersionManager.IsItemUnderRoots(item))
+                    bool containsTemplate = configVersionTemplates.Any() ? configVersionTemplates.Contains(item.TemplateID.ToString()) : true;
+                    if (containsTemplate && Settings.GetBoolSetting("VersionManager.ShowContentEditorWarnings", true) && VersionManager.IsItemUnderRoots(item))
                     {
                         int count = item.Versions.Count;
                         int maximum = Settings.GetIntSetting("VersionManager.NumberOfVersionsToKeep", 5);

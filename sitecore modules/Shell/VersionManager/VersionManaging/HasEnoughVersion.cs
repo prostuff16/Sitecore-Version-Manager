@@ -8,13 +8,13 @@ using System.Linq;
 
 namespace Sitecore.VersionManager.Pipelines.GetContentEditorWarnings
 {
-    using System.Configuration;
     using System.Text;
     using Sitecore.Configuration;
     using Sitecore.Data.Items;
     using Sitecore.Data.Managers;
     using Sitecore.Globalization;
     using Sitecore.Pipelines.GetContentEditorWarnings;
+    using Sitecore.VersionManager.sitecore_modules.Shell.VersionManager;
 
     /// <summary>
     /// Implements the render field
@@ -43,41 +43,37 @@ namespace Sitecore.VersionManager.Pipelines.GetContentEditorWarnings
         /// <param name="args"> The arguments.</param>
         private void StartVersionTask(GetContentEditorWarningsArgs args)
         {
-            // Get a string array of the Valid Templates to look at.  The idea is to ignore certain templates that will never have multiple versions
-            string[] configVersionTemplates = Settings.GetSetting("VersionManager.ValidTemplates", "").Trim().Replace(" ", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
-
             if (args != null)
             {
                 Item item = args.Item;
                 if (item != null)
                 {
-                    bool containsTemplate = configVersionTemplates.Any() ? configVersionTemplates.Contains(item.TemplateID.ToString()) : true;
-                    if (containsTemplate && Settings.GetBoolSetting("VersionManager.ShowContentEditorWarnings", true) && VersionManager.IsItemUnderRoots(item))
+                    bool containsTemplate = VersionManagerConstants.ConfigVersionTemplates.Any() ? VersionManagerConstants.ConfigVersionTemplates.Contains(item.TemplateID.ToString()) : true;
+                    if (containsTemplate && VersionManagerConstants.ShowContentEditorWarnings && VersionManager.IsItemUnderRoots(item))
                     {
                         int count = item.Versions.Count;
-                        int maximum = Settings.GetIntSetting("VersionManager.NumberOfVersionsToKeep", 5);
-                        if (maximum < 1)
+                        if (VersionManagerConstants.MaxVersions < 1)
                         {
                             return;
                         }
 
-                        if (count >= maximum)
+                        if (count >= VersionManagerConstants.MaxVersions)
                         {
                             GetContentEditorWarningsArgs.ContentEditorWarning warning = args.Add();
-                            if (count == maximum)
+                            if (count == VersionManagerConstants.MaxVersions)
                             {
                                 warning.Title = Translate.Text("The current item has reached maximum allowed number of versions.");
                             }
 
-                            if (count > maximum)
+                            if (count > VersionManagerConstants.MaxVersions)
                             {
                                 warning.Title = Translate.Text("The current item has exceeded maximum allowed number of versions.");
                                 warning.AddOption("Delete obsolete versions", "version:clean");
                             }
 
-                            if (Settings.GetBoolSetting("VersionManager.AutomaticCleanupEnabled", false))
+                            if (VersionManagerConstants.AutomaticCleanup)
                             {
-                                warning.Text = this.GetText(item, count - maximum + 1) + ".";
+                                warning.Text = this.GetText(item, count - VersionManagerConstants.MaxVersions + 1) + ".";
                             }
                             else
                             {
@@ -101,7 +97,7 @@ namespace Sitecore.VersionManager.Pipelines.GetContentEditorWarnings
         private string GetText(Item item, int k)
         {
             var result = new StringBuilder(100);
-            if (!Context.IsAdministrator && (!item.Locking.IsLocked()) && Settings.RequireLockBeforeEditing && TemplateManager.IsFieldPartOfTemplate(FieldIDs.Lock, item))
+            if (!Context.IsAdministrator && !item.Locking.IsLocked() && Settings.RequireLockBeforeEditing && TemplateManager.IsFieldPartOfTemplate(FieldIDs.Lock, item))
             {
                 result.Append(Translate.Text("Editing an item"));
             }

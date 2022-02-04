@@ -4,39 +4,42 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
+using System.Linq;
+using Sitecore.VersionManager.sitecore_modules.Shell.VersionManager;
+
 namespace Sitecore.VersionManager.Handlers
 {
-  using System;
-  using Sitecore.Configuration;
-  using Sitecore.Data.Items;
-  using Sitecore.Events;
+    using System;
+    using Sitecore.Data.Items;
+    using Sitecore.Events;
     using Sitecore.VersionManager;
 
-  /// <summary>
-  /// Represents a version added event. Used for deleting old versions.
-  /// </summary>
-  public class VersionAddedHandler
-  {
-    // Methods
-
     /// <summary>
-    /// Called when the version has added
+    /// Represents a version added event. Used for deleting old versions.
     /// </summary>
-    /// <param name="sender">The sender</param>
-    /// <param name="args">The arguments</param>
-    protected void OnVersionAdded(object sender, EventArgs args)
+    public class VersionAddedHandler
     {
-      if (args != null)
-      {
-        if (Settings.GetBoolSetting("VersionManager.AutomaticCleanupEnabled", true))
+        // Methods
+
+        /// <summary>
+        /// Called when the version has added
+        /// </summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="args">The arguments</param>
+        protected void OnVersionAdded(object sender, EventArgs args)
         {
-          var item = Event.ExtractParameter(args, 0) as Item;
-          if ((item != null) && VersionManager.IsItemUnderRoots(item)) 
-          {
-            VersionManager.DeleteItemVersions(item);
-          }
+            if (args != null)
+            {
+                if (VersionManagerConstants.AutomaticCleanup)
+                {
+                    var item = Event.ExtractParameter(args, 0) as Item;
+                    bool containsTemplate = item != null && (VersionManagerConstants.ConfigVersionTemplates.Any() ? VersionManagerConstants.ConfigVersionTemplates.Contains(item.TemplateID.ToString()) : true);
+                    if (item != null && VersionManager.IsItemUnderRoots(item) && containsTemplate)
+                    {
+                        VersionManager.DeleteItemVersions(item);
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }

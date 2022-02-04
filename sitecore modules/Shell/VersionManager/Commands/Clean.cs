@@ -4,11 +4,12 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
+using Sitecore.VersionManager.sitecore_modules.Shell.VersionManager;
+
 namespace Sitecore.VersionManager.Commands
 {
   using System;
   using System.Collections.Specialized;
-  using Sitecore.Configuration;
   using Sitecore.Data.Items;
   using Sitecore.Diagnostics;
   using Sitecore.Globalization;
@@ -97,7 +98,7 @@ namespace Sitecore.VersionManager.Commands
             if (item2 != null)
             {
               VersionManager.DeleteItemVersions(item2);
-              Log.Audit(this, "Delete version from item {0}, language \"{1}\"", new[] { item2.Name, item2.Language.ToString() });
+              Log.Audit($"Delete version from item {item2.Name}, language {item2.Language}", "SitecoreVersionManager");
             }
           }
           if (!this.isFromCE)
@@ -119,7 +120,7 @@ namespace Sitecore.VersionManager.Commands
             return;
           }
 
-          SheerResponse.Confirm(Translate.Text("Are you sure you want to delete all obsolete versions of the \"{1}\" in \"{0}\" language? Only the latest {2} versions will be kept.", new object[] { item.Language.ToString(), item.Name, Settings.GetSetting("VersionManager.NumberOfVersionsToKeep") }));
+          SheerResponse.Confirm(Translate.Text("Are you sure you want to delete all obsolete versions of the \"{1}\" in \"{0}\" language? Only the latest {2} versions will be kept.", new object[] { item.Language.ToString(), item.Name, VersionManagerConstants.MaxVersions }));
         }
         else
         {

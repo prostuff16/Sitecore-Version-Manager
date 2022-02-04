@@ -4,6 +4,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
+using Sitecore.VersionManager.sitecore_modules.Shell.VersionManager;
+
 namespace Sitecore.VersionManager.Commands
 {
     using System;
@@ -65,7 +67,7 @@ namespace Sitecore.VersionManager.Commands
             else
             {
               SheerResponse.Confirm(Translate.Text("Are you sure you want to delete all obsolete versions of all listed items in all languages?") + " " + Translate.Text("Only the latest") +
-                " " + Sitecore.Configuration.Settings.GetSetting("VersionManager.NumberOfVersionsToKeep") + " " + Translate.Text("versions will be kept."));
+                " " + VersionManagerConstants.MaxVersions + " " + Translate.Text("versions will be kept."));
             }
 
             args.WaitForPostBack();

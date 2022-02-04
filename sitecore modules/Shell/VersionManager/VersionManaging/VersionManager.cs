@@ -4,11 +4,17 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using Sitecore.Common;
+using Sitecore.DependencyInjection;
+using Sitecore.VersionManager.sitecore_modules.Services;
+using Sitecore.VersionManager.sitecore_modules.Shell.VersionManager;
+
 namespace Sitecore.VersionManager
 {
     using System;
     using System.Collections.Generic;
-    using System.Configuration;
     using System.Text;
     using System.Xml;
     using Sitecore.Configuration;
@@ -17,7 +23,6 @@ namespace Sitecore.VersionManager
     using Sitecore.Data.Serialization;
     using Sitecore.Diagnostics;
     using Sitecore.Globalization;
-    using StringExtensions;
 
     /// <summary>
     /// Class that will manage deleting, serialization, finding items
@@ -56,8 +61,7 @@ namespace Sitecore.VersionManager
         {
             get
             {
-                XmlNodeList nodes = Factory.GetConfigNodes("settings/setting[@name='VersionManager.Roots']/root");
-                isDisabled = (nodes.Count == 0) || (Settings.GetIntSetting("VersionManager.NumberOfVersionsToKeep", 5) < 1);
+                isDisabled = VersionManagerConstants.Roots.Count == 0 || VersionManagerConstants.MaxVersions < 1;
                 return isDisabled;
             }
         }
@@ -73,7 +77,7 @@ namespace Sitecore.VersionManager
         /// <returns>item from guid and language values</returns>
         public static Item GetItemFromStr(string str)
         {
-            string[] itemParams = str.ToString().Split(new char[] { '^' });
+            string[] itemParams = str.Split(new char[] { '^' });
             Language language = Language.Parse(itemParams[1]);
             Sitecore.Data.Database master = Sitecore.Configuration.Factory.GetDatabase("master");
             Item item = master.GetItem(itemParams[0], language);
@@ -100,10 +104,7 @@ namespace Sitecore.VersionManager
         /// </summary>
         public static void Refresh()
         {
-            if (sourceList != null)
-            {
-                sourceList.Clear();
-            }
+            sourceList?.Clear();
         }
 
         /// <summary>
@@ -117,25 +118,23 @@ namespace Sitecore.VersionManager
             {
                 return;
             }
-
-            int maximum = Settings.GetIntSetting("VersionManager.NumberOfVersionsToKeep", 5);
-            bool isSerialize = Settings.GetBoolSetting("VersionManager.ArchiveDeletedVersions", true);
+            
             int current = item.Versions.Count;
-            if (current - maximum > 0)
+            if (current - VersionManagerConstants.MaxVersions > 0)
             {
                 Item[] versions = item.Versions.GetVersions(false);
-                if (isSerialize)
+                if (VersionManagerConstants.ArchiveDeletedVersions)
                 {
                     SerializeItemVersions(item, versions[0].Version.Number, versions[versions.Length - 1].Version.Number);
                 }
 
-                for (int i = 0; i < current - maximum; i++)
+                for (int i = 0; i < current - VersionManagerConstants.MaxVersions; i++)
                 {
                     versions[i].Versions.RemoveVersion();
-                    Log.Info("Version Manager: Removed version {0}; Item: {1}; Language: {2}".FormatWith(i, item.Paths.Path, item.Language.ToString()), "DeleteItemVersions");
+                    Log.Info($"Version Manager: Removed version {i}; Item: {item.Paths.Path}; Language: {item.Language}", "SitecoreVersionManager");
                 }
 
-                sourceList.Remove(item.ID.ToString() + "^" + item.Language.ToString());
+                sourceList.Remove($"{item.ID}^{item.Language}");
             }
         }
 
@@ -213,42 +212,41 @@ namespace Sitecore.VersionManager
         /// <param name="item">processed item</param>
         private static void CheckVersion(Item item)
         {
-            int maxVersions = Settings.GetIntSetting("VersionManager.NumberOfVersionsToKeep", 5);
             Database master = Factory.GetDatabase("master");
             foreach (Language language in item.Languages)
             {
                 Item langItem = master.GetItem(item.ID, language);
-                if (langItem.Versions.Count > maxVersions)
+                bool containsTemplate = VersionManagerConstants.ConfigVersionTemplates.Any() ? VersionManagerConstants.ConfigVersionTemplates.Contains(item.TemplateID.ToString()) : true;
+                if (langItem.Versions.Count > VersionManagerConstants.MaxVersions && containsTemplate)
                 {
-                    sourceList.Add(langItem.ID.ToString() + "^" + langItem.Language.ToString(), langItem);
+                    sourceList.Add($"{langItem.ID}^{langItem.Language}", langItem);
                 }
             }
 
-            foreach (Item item1 in item.Children)
+            var _itemSearchService = ServiceLocator.ServiceProvider.GetService<IItemSearchService>();
+            
+            foreach (Item item1 in _itemSearchService.GetChildren(item).Select(i=>master.GetItem(i.ToID())))
             {
                 CheckVersion(item1);
             }
         }
 
         /// <summary>
-        /// Get all valid roots from web.config
+        /// Get all valid roots from config
         /// </summary>
-        /// <returns>roots from web.config</returns>
+        /// <returns>roots from config</returns>
         private static List<string> GetAllRoots()
         {
             var result = new List<string>();
-            XmlNodeList nodes = Factory.GetConfigNodes("settings/setting[@name='VersionManager.Roots']/root");
-            if (nodes.Count == 0)
+            if (VersionManagerConstants.Roots.Count == 0)
             {
                 isDisabled = true;
                 return result;
             }
-            else
+
+            foreach (XmlNode node in VersionManagerConstants.Roots)
             {
-                foreach (XmlNode node in nodes)
-                {
-                    result.Add(node.Attributes["value"].Value);
-                }
+                if (node.Attributes != null) result.Add(node.Attributes["value"].Value);
             }
 
             CheckRoots(result);
@@ -265,7 +263,7 @@ namespace Sitecore.VersionManager
         {
             Assert.ArgumentNotNull(item, "item");
             var reference = new ItemReference(item);
-            Log.Info("Serializing {0}", new object[] { reference });
+            Log.Info($"Serializing {reference}", "SitecoreVersionManager");
             var path = new StringBuilder("VersionManager/");
             path.Append(DateTime.Now.Year + "/");
             path.Append(DateTime.Now.Month + "/");

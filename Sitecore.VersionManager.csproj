@@ -57,6 +57,9 @@
     <Reference Include="ComponentArt.Web.UI">
       <HintPath>lib\ComponentArt.Web.UI.dll</HintPath>
     </Reference>
+    <Reference Include="DocumentFormat.OpenXml, Version=2.7.2.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
+      <HintPath>packages\DocumentFormat.OpenXml.2.7.2\lib\net46\DocumentFormat.OpenXml.dll</HintPath>
+    </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.4.9.5, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>packages\HtmlAgilityPack.1.4.9.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
@@ -100,6 +103,27 @@
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="PdfSharp, Version=1.50.5147.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>packages\PDFsharp.1.50.5147\lib\net20\PdfSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp.Charting, Version=1.50.5147.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>packages\PDFsharp.1.50.5147\lib\net20\PdfSharp.Charting.dll</HintPath>
+    </Reference>
+    <Reference Include="Sitecore.Abstractions, Version=12.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Sitecore.Abstractions.9.1.0\lib\net471\Sitecore.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Sitecore.ContentSearch, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Sitecore.ContentSearch.9.1.0\lib\net471\Sitecore.ContentSearch.dll</HintPath>
+    </Reference>
+    <Reference Include="Sitecore.ContentSearch.ContentExtraction, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Sitecore.ContentSearch.ContentExtraction.9.1.0\lib\net471\Sitecore.ContentSearch.ContentExtraction.dll</HintPath>
+    </Reference>
+    <Reference Include="Sitecore.ContentSearch.Data, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Sitecore.ContentSearch.Data.9.1.0\lib\net471\Sitecore.ContentSearch.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="Sitecore.ContentSearch.Linq, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Sitecore.ContentSearch.Linq.9.1.0\lib\net471\Sitecore.ContentSearch.Linq.dll</HintPath>
+    </Reference>
     <Reference Include="Sitecore.Kernel, Version=12.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Sitecore.Kernel.9.1.0\lib\net471\Sitecore.Kernel.dll</HintPath>
     </Reference>
@@ -125,6 +149,14 @@
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.IO.FileSystem.Primitives.4.0.1\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.Packaging, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.IO.Packaging.4.0.0\lib\net46\System.IO.Packaging.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
@@ -142,10 +174,16 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="sitecore modules\IoC\ServiceAttribute.cs" />
+    <Compile Include="sitecore modules\Services\IItemSearchService.cs" />
+    <Compile Include="sitecore modules\Services\ItemSearchService.cs" />
     <Compile Include="sitecore modules\Shell\VersionManager\Commands\CleanAll.cs" />
     <Compile Include="sitecore modules\Shell\VersionManager\Commands\Clean.cs" />
+    <Compile Include="sitecore modules\Shell\VersionManager\Service\VersionManagerService.cs" />
+    <Compile Include="sitecore modules\Shell\VersionManager\VersionManagerConstants.cs" />
     <Compile Include="sitecore modules\Shell\VersionManager\UI\GridItem.cs" />
     <Compile Include="sitecore modules\Shell\VersionManager\Commands\Refresh.cs" />
     <Compile Include="sitecore modules\Shell\VersionManager\VersionManaging\VersionManager.cs" />
@@ -157,6 +195,7 @@
     <Compile Include="sitecore modules\Shell\VersionManager\Events\VersionAddedHandler.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="App_Config\Modules\SitecoreVersionManager\Development.config" />
     <None Include="App_Config\Modules\SitecoreVersionManager\Sitecore.VersionManager.config">
       <SubType>Designer</SubType>

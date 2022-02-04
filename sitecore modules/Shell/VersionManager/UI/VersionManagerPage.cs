@@ -16,7 +16,6 @@ namespace Sitecore.VersionManager
     using Sitecore.Shell.Framework.Commands;
     using Sitecore.Web.UI.Grids;
     using Sitecore.Web.UI.XamlSharp.Xaml;
-    using Sitecore.Web.UI.Sheer;
 
     /// <summary>
     /// Class that inits and fills the Version Manager UI

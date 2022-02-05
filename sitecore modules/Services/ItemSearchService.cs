@@ -24,6 +24,15 @@ namespace Sitecore.VersionManager.sitecore_modules.Services
                 var query = PredicateBuilder.True<SearchResultItem>();
                 query = query.And(i => i.Parent == item.ID);
 
+                if (VersionManagerConstants.IgnoredFolders.Any())
+                {
+                    foreach (var ignoredFolder in VersionManagerConstants.IgnoredFolders)
+                    {
+                        query = query.And(i => i.TemplateId != ignoredFolder);
+                    }
+                }
+
+                Log.Debug($"Query : {query}", "SitecoreVersionManager");
                 var itemList = new List<Guid>();
 
                 using (var context = index.CreateSearchContext())
@@ -31,6 +40,7 @@ namespace Sitecore.VersionManager.sitecore_modules.Services
                     var results = context.GetQueryable<SearchResultItem>().Where(query).GetResults();
                     if (results == null || !results.Any())
                     {
+                        Log.Debug($"No results", "SitecoreVersionManager");
                         return itemList;
                     }
 
@@ -40,6 +50,7 @@ namespace Sitecore.VersionManager.sitecore_modules.Services
                     }
                 }
 
+                Log.Debug($"Items: {itemList.Count}", "SitecoreVersionManager");
                 return itemList;
             }
             catch (Exception ex)

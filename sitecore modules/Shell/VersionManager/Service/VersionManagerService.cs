@@ -15,7 +15,14 @@ namespace Sitecore.VersionManager.sitecore_modules.Shell.VersionManager.Service
 
             foreach (var item in items)
             {
-                Sitecore.VersionManager.VersionManager.DeleteItemVersions(item);
+                if (VersionManagerConstants.ServiceRunInDebugMode)
+                {
+                    Log.Info($"Running in Debug mode! Disable debug mode in the config to delete versions from {item.ID} : {item.Paths.FullPath}", "SitecoreVersionManager");
+                }
+                else
+                {
+                    Sitecore.VersionManager.VersionManager.DeleteItemVersions(item);
+                }
             }
             Log.Info($"Finished versions cleanup for {items.Count}", "SitecoreVersionManager");
         }

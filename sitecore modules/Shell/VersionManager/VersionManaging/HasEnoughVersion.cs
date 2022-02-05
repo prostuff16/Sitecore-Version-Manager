@@ -48,7 +48,7 @@ namespace Sitecore.VersionManager.Pipelines.GetContentEditorWarnings
                 Item item = args.Item;
                 if (item != null)
                 {
-                    bool containsTemplate = VersionManagerConstants.ConfigVersionTemplates.Any() ? VersionManagerConstants.ConfigVersionTemplates.Contains(item.TemplateID.ToString()) : true;
+                    bool containsTemplate = !VersionManagerConstants.ConfigVersionTemplates.Any() || VersionManagerConstants.ConfigVersionTemplates.Contains(item.TemplateID);
                     if (containsTemplate && VersionManagerConstants.ShowContentEditorWarnings && VersionManager.IsItemUnderRoots(item))
                     {
                         int count = item.Versions.Count;

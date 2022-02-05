@@ -118,7 +118,7 @@ namespace Sitecore.VersionManager
             {
                 return;
             }
-            
+
             int current = item.Versions.Count;
             if (current - VersionManagerConstants.MaxVersions > 0)
             {
@@ -146,8 +146,10 @@ namespace Sitecore.VersionManager
             Database master = Factory.GetDatabase("master");
             foreach (string str in GetAllRoots())
             {
+                Log.Info($"Starting to get Items","SitecoreVersionManager");
                 Item startItem = master.GetItem(str);
                 CheckVersion(startItem);
+                Log.Info($"Done getting Items", "SitecoreVersionManager");
             }
         }
 
@@ -216,18 +218,25 @@ namespace Sitecore.VersionManager
             foreach (Language language in item.Languages)
             {
                 Item langItem = master.GetItem(item.ID, language);
-                bool containsTemplate = VersionManagerConstants.ConfigVersionTemplates.Any() ? VersionManagerConstants.ConfigVersionTemplates.Contains(item.TemplateID.ToString()) : true;
+                bool containsTemplate = !VersionManagerConstants.ConfigVersionTemplates.Any() || VersionManagerConstants.ConfigVersionTemplates.Contains(item.TemplateID);
                 if (langItem.Versions.Count > VersionManagerConstants.MaxVersions && containsTemplate)
                 {
                     sourceList.Add($"{langItem.ID}^{langItem.Language}", langItem);
+                    Log.Debug($"Added item {langItem.ID}", "SitecoreVersionManager");
                 }
             }
 
-            var _itemSearchService = ServiceLocator.ServiceProvider.GetService<IItemSearchService>();
-            
-            foreach (Item item1 in _itemSearchService.GetChildren(item).Select(i=>master.GetItem(i.ToID())))
+            var _itemSearchService = new ItemSearchService();
+            var itemGuids = _itemSearchService.GetChildren(item);
+
+            if (itemGuids.Any())
             {
-                CheckVersion(item1);
+                var items = itemGuids.Select(i => master.GetItem(i.ToID()));
+                foreach (Item item1 in items)
+                {
+                    Log.Debug($"Processing item {item.Paths.Path} : {item1.ID}", "SitecoreVersionManager");
+                    CheckVersion(item1);
+                }
             }
         }
 

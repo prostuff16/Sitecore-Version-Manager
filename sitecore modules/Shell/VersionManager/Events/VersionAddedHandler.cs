@@ -33,7 +33,7 @@ namespace Sitecore.VersionManager.Handlers
                 if (VersionManagerConstants.AutomaticCleanup)
                 {
                     var item = Event.ExtractParameter(args, 0) as Item;
-                    bool containsTemplate = item != null && (VersionManagerConstants.ConfigVersionTemplates.Any() ? VersionManagerConstants.ConfigVersionTemplates.Contains(item.TemplateID.ToString()) : true);
+                    bool containsTemplate = item != null && (!VersionManagerConstants.ConfigVersionTemplates.Any() || VersionManagerConstants.ConfigVersionTemplates.Contains(item.TemplateID));
                     if (item != null && VersionManager.IsItemUnderRoots(item) && containsTemplate)
                     {
                         VersionManager.DeleteItemVersions(item);

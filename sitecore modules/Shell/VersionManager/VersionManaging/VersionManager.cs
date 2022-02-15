@@ -146,7 +146,7 @@ namespace Sitecore.VersionManager
             Database master = Factory.GetDatabase("master");
             foreach (string str in GetAllRoots())
             {
-                Log.Info($"Starting to get Items","SitecoreVersionManager");
+                Log.Info($"Starting to get Items", "SitecoreVersionManager");
                 Item startItem = master.GetItem(str);
                 CheckVersion(startItem);
                 Log.Info($"Done getting Items", "SitecoreVersionManager");
@@ -214,29 +214,38 @@ namespace Sitecore.VersionManager
         /// <param name="item">processed item</param>
         private static void CheckVersion(Item item)
         {
-            Database master = Factory.GetDatabase("master");
-            foreach (Language language in item.Languages)
+            try
             {
-                Item langItem = master.GetItem(item.ID, language);
-                bool containsTemplate = !VersionManagerConstants.ConfigVersionTemplates.Any() || VersionManagerConstants.ConfigVersionTemplates.Contains(item.TemplateID);
-                if (langItem.Versions.Count > VersionManagerConstants.MaxVersions && containsTemplate)
+                Database master = Factory.GetDatabase("master");
+                foreach (Language language in item.Languages)
                 {
-                    sourceList.Add($"{langItem.ID}^{langItem.Language}", langItem);
-                    Log.Debug($"Added item {langItem.ID}", "SitecoreVersionManager");
+                    Log.Debug($"Processing languages for {item.Paths.Path} : {item.ID}", "SitecoreVersionManager");
+                    Item langItem = master.GetItem(item.ID, language);
+                    bool containsTemplate = !VersionManagerConstants.ConfigVersionTemplates.Any() || VersionManagerConstants.ConfigVersionTemplates.Contains(item.TemplateID);
+                    if (langItem.Versions.Count > VersionManagerConstants.MaxVersions && containsTemplate)
+                    {
+                        sourceList.Add($"{langItem.ID}^{langItem.Language}", langItem);
+                        Log.Debug($"Added item {langItem.ID}", "SitecoreVersionManager");
+                    }
+                }
+
+                var _itemSearchService = new ItemSearchService();
+                var itemGuids = _itemSearchService.GetChildren(item);
+
+                if (itemGuids.Any())
+                {
+                    var items = itemGuids.Select(i => master.GetItem(i.ToID()));
+                    foreach (Item item1 in items)
+                    {
+                        Log.Debug($"Processing item {item.Paths.Path} : {item1.ID}", "SitecoreVersionManager");
+                        CheckVersion(item1);
+                    }
                 }
             }
-
-            var _itemSearchService = new ItemSearchService();
-            var itemGuids = _itemSearchService.GetChildren(item);
-
-            if (itemGuids.Any())
+            catch (Exception e)
             {
-                var items = itemGuids.Select(i => master.GetItem(i.ToID()));
-                foreach (Item item1 in items)
-                {
-                    Log.Debug($"Processing item {item.Paths.Path} : {item1.ID}", "SitecoreVersionManager");
-                    CheckVersion(item1);
-                }
+                Log.Debug($"Error Processing item {item.Paths.Path} : {item.ID}", "SitecoreVersionManager");
+                Log.Debug($"Exception for item {item.ID} : {e.StackTrace}", "SitecoreVersionManager");
             }
         }
 

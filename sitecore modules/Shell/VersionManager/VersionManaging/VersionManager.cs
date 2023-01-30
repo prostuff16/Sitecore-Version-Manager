@@ -338,7 +338,7 @@ namespace Sitecore.VersionManager
         private static void _SerializeItemVersions(Item item, int first, int last)
         {
             Assert.ArgumentNotNull(item, "item");
-            var reference = new ItemReference(item);
+            var reference = new ItemReference(item.Database.Name, GetPath(item));
             Log.Info($"Serializing {reference}", "SitecoreVersionManager");
             var path = new StringBuilder("VersionManager/");
             path.Append(DateTime.Now.Year + "/");

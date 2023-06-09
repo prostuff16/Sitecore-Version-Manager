@@ -54,7 +54,7 @@ namespace Sitecore.VersionManager.sitecore_modules.Services
             }
             catch (Exception ex)
             {
-                Log.Error("", ex, this);
+                Log.Error("", ex, "SitecoreVersionManager");
                 return null;
             }
         }
@@ -120,7 +120,7 @@ namespace Sitecore.VersionManager.sitecore_modules.Services
             }
             catch (Exception ex)
             {
-                Log.Error("", ex, this);
+                Log.Error("", ex, "SitecoreVersionManager");
                 return null;
             }
         }
